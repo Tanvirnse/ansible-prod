@@ -1,9 +1,7 @@
 ---
-- name: Install Telegraf and InfluxDB and configure Telegraf to send metrics to InfluxDB
+- name: Install Telegraf
   hosts: all
-  become: true
-  vars:   
-    telegraf_version: "latest"   
+  become: true   
 
   tasks:
     - name: Install prerequisites
