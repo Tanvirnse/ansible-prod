@@ -7,11 +7,10 @@
 
   tasks:
   
-    - name: install updates (Ubuntu)
-    tags: always
-    apt:
-       upgrade: dist
-       update_cache: yes
+    - name: install updates (Ubuntu)     
+      apt:
+        upgrade: dist
+        update_cache: yes
   
     - name: Install prerequisites
       apt:
