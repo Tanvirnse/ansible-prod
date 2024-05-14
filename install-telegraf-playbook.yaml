@@ -28,5 +28,5 @@
   handlers:
     - name: restart telegraf
       service:
-        name: telegraf
+        name: telegraf.service
         state: restarted
