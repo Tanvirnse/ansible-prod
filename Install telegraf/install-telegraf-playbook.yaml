@@ -5,12 +5,8 @@
   vars:
     influxdb_version: "latest"
     telegraf_version: "latest"
-    influxdb_http_port: 8086
-    influxdb_admin_user: admin
-    influxdb_admin_password: admin
-    influxdb_database: telegraf
-    influxdb_retention_policy: autogen
-    influxdb_measurement: system  
+    influxdb_http_port: "8086"
+    
 
   tasks:
     - name: Install prerequisites
