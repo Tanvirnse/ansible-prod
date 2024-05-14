@@ -14,16 +14,12 @@
   debug = false
   quiet = false
   logfile = ""
-  hostname = "{{ ansible_hostname }}"
   omit_hostname = false
 
 [[outputs.influxdb]]
-  urls = ["http://ls62.osl.one:{{ influxdb_http_port }}"]
-  database = "{{ influxdb_database }}"
-  retention_policy = "{{ influxdb_retention_policy }}"
+  urls = ["http://monitor.osl.team:8086"]
+  database = "m2s-log.onnorokom.cloud"  
   timeout = "5s"
-  username = "{{ influxdb_admin_user }}"
-  password = "{{ influxdb_admin_password }}"
 
 [[inputs.cpu]]
   percpu = true
