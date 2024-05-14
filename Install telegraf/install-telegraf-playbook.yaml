@@ -1,7 +1,16 @@
 ---
 - name: Install Telegraf
   hosts: all
-  become: true   
+  become: true
+  vars:
+    influxdb_version: "latest"
+    telegraf_version: "latest"
+    influxdb_http_port: 8086
+    influxdb_admin_user: admin
+    influxdb_admin_password: admin
+    influxdb_database: telegraf
+    influxdb_retention_policy: autogen
+    influxdb_measurement: system  
 
   tasks:
     - name: Install prerequisites
