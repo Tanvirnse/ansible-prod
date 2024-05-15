@@ -11,7 +11,7 @@
         state: present
         create_home: yes
         shell: /bin/bash
-		
+
     - name: Add user to sudoers group
       user:
         name: dev
