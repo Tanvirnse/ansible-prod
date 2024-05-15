@@ -1,0 +1,9 @@
+- name: Restart Ubuntu Server
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Restart the server
+      shell: sleep 5 && shutdown -r now
+      async: 1
+      poll: 0

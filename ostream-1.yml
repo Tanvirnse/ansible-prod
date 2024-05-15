@@ -1,0 +1,52 @@
+---
+- name: Ostream Edge 1
+  hosts: all
+  become: true
+  tasks:
+    
+	- name: Set timezone to Asia/Dhaka
+      timezone:
+        name: Asia/Dhaka
+-----------------------------------------	
+    - name: Set hostname
+      hostname:
+        name: os-edge- - .udvashunmesh.com
+
+---------------------------------------------	
+	
+	- name: Create user without SSH key
+      user:
+        name: dev
+		password: OslDev@123@
+        state: present
+        create_home: yes
+        shell: /bin/bash
+
+-------------------------------------------------
+    
+	- name: Add user to sudoers group
+      user:
+        name: dev
+        groups: sudo
+        append: yes
+
+-------------------------------------------	
+	
+	- name: Read contents of source file
+      slurp:
+        src: "/path/to/source/file"
+      register: source_file_contents
+
+
+    - name: Append contents to destination file
+      lineinfile:
+        dest: "/etc/sysctl.conf"
+        line: "{{ source_file_contents.content | b64decode }}"
+        insertafter: EOF
+      notify: reload sysctl
+
+    handlers:
+    - name: reload sysctl
+      command: sysctl -p
+	  
+----------------------------------------------------------
