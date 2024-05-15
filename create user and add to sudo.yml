@@ -4,7 +4,7 @@
   become: true
   tasks:
     
-	- name: Create user without SSH key
+    - name: Create user without SSH key
       user:
         name: dev
 		password: m2sdev@123#
@@ -12,7 +12,7 @@
         create_home: yes
         shell: /bin/bash
 		
-	- name: Add user to sudoers group
+    - name: Add user to sudoers group
       user:
         name: dev
         groups: sudo
