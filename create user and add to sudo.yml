@@ -1,0 +1,19 @@
+---
+- name: create user and add to sudo
+  hosts: all
+  become: true
+  tasks:
+    
+	- name: Create user without SSH key
+      user:
+        name: dev
+		password: m2sdev@123#
+        state: present
+        create_home: yes
+        shell: /bin/bash
+		
+	- name: Add user to sudoers group
+      user:
+        name: dev
+        groups: sudo
+        append: yes
