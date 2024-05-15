@@ -4,13 +4,12 @@
   become: true
   tasks:
     
-    - name: Create user without SSH key
+    - name: Create user
       user:
         name: dev
-        password: "m2sdev@123#"
-        state: present
-        create_home: yes
+        password: "{{ 'm2sdev@123#' | password_hash('sha512') }}"
         shell: /bin/bash
+        createhome: yes
 
     - name: Add user to sudoers group
       user:
