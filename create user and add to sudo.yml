@@ -7,7 +7,7 @@
     - name: Create user without SSH key
       user:
         name: dev
-		password: "m2sdev@123#"
+	password: "m2sdev@123#"
         state: present
         create_home: yes
         shell: /bin/bash
