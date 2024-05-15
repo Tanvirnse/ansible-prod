@@ -1,0 +1,18 @@
+- name: Create sudoers file in /etc/sudoers.d folder
+  hosts: all
+  become: yes
+  tasks:
+    - name: Create sudoers file
+      copy:
+        content: |
+          tanvir ALL=(ALL) NOPASSWD: ALL
+        dest: /etc/sudoers.d/tanvir
+        owner: root
+        group: root
+        mode: '0440'
+      notify: validate sudoers syntax
+
+  handlers:
+    - name: validate sudoers syntax
+      command: visudo -cf /etc/sudoers.d/tanvir
+      ignore_errors: yes
