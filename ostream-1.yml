@@ -7,13 +7,11 @@
 	- name: Set timezone to Asia/Dhaka
       timezone:
         name: Asia/Dhaka
------------------------------------------	
+
     - name: Set hostname
       hostname:
         name: os-edge- - .udvashunmesh.com
-
----------------------------------------------	
-	
+		
 	- name: Create user without SSH key
       user:
         name: dev
@@ -22,16 +20,14 @@
         create_home: yes
         shell: /bin/bash
 
--------------------------------------------------
-    
+-------------------------------------------------   
 	- name: Add user to sudoers group
       user:
         name: dev
         groups: sudo
         append: yes
 
--------------------------------------------	
-	
+-------------------------------------------		
 	- name: Read contents of source file
       slurp:
         src: "/path/to/source/file"
