@@ -1,0 +1,49 @@
+---
+- name: Extend disk space, LVM, and mount on /mnt for Semaphore
+  hosts: all
+  become: true
+  tasks:
+    - name: Check disk partitions
+      command: df -h /mnt
+      register: disk_status
+      ignore_errors: true
+
+    - name: Resize partition if /mnt is not mounted
+      parted:
+        device: /dev/sda
+        number: 1
+        state: resized
+        name: ''
+        resizepart: yes
+        unit: MiB
+        part_end: 100%
+      when: disk_status.rc != 0
+
+    - name: Resize VG if needed
+      lvg:
+        vg: vgname
+        pvs: /dev/sda1
+        pesize: 4M
+        state: present
+
+    - name: Extend LV
+      lvol:
+        vg: vgname
+        lv: lvname
+        size: +100%FREE
+        resizefs: yes
+      notify: Mount /mnt
+
+    - name: Update /etc/fstab
+      lineinfile:
+        path: /etc/fstab
+        line: "/dev/vgname/lvname  /mnt  ext4  defaults  0  0"
+        state: present
+
+  handlers:
+    - name: Mount /mnt
+      ansible.builtin.mount:
+        src: /dev/vgname/lvname
+        path: /mnt
+        fstype: ext4
+        state: mounted
