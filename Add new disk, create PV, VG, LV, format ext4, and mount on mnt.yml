@@ -1,0 +1,42 @@
+---
+- name: Add new disk, create PV, VG, LV, format ext4, and mount on /mnt
+  hosts: all
+  become: true
+  tasks:
+     - name: Create Physical Volume (PV)
+      lvm_pv:
+        pv: /dev/sdb1
+
+    - name: Create Volume Group (VG)
+      lvm_vg:
+        vg: vgname
+        pvs: /dev/sdb1
+
+    - name: Create Logical Volume (LV)
+      lvm_lv:
+        vg: vgname
+        lv: lvname
+        size: 10G
+
+    - name: Format Logical Volume with ext4
+      filesystem:
+        fstype: ext4
+        dev: /dev/vgname/lvname
+
+    - name: Create mount point
+      file:
+        path: /mnt
+        state: directory
+
+    - name: Mount /mnt
+      ansible.builtin.mount:
+        src: /dev/vgname/lvname
+        path: /mnt
+        fstype: ext4
+        state: mounted
+
+    - name: Update /etc/fstab
+      lineinfile:
+        path: /etc/fstab
+        line: "/dev/vgname/lvname  /mnt  ext4  defaults  0  0"
+        state: present
