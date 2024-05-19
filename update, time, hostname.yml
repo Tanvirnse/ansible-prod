@@ -13,4 +13,4 @@
 
     - name: Set hostname
       hostname:
-        name: ubtemplate
+        name: maradb-n1
