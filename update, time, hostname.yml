@@ -13,4 +13,4 @@
 
     - name: Set hostname
       hostname:
-        name: maradb-n1
+        name: maradb-n3
