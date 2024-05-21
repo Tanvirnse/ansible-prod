@@ -2,9 +2,9 @@
   hosts: all
   become: yes
   vars:
-    user_to_delete: test
-    new_user: newuser
-    new_user_password: one
+    user_to_delete: m2s-dev
+    new_user: m2s-admin
+    new_user_password: m2sprodadmin@2024#
 
   tasks:
     - name: Ensure the old user is absent
