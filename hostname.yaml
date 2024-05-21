@@ -1,8 +1,23 @@
-- name: update, time, hostname
-  hosts: all
+- name: m1
+  hosts: m1
   become: true
   tasks:
-
-    - name: Set hostname
+    - name: Set hostname m1
       hostname:
         name: m2s-db-n1.osl.team
+
+- name: m2
+  hosts: m2
+  become: true
+  tasks:
+    - name: Set hostname m2
+      hostname:
+        name: m2s-db-n2.osl.team
+
+- name: m3
+  hosts: m3
+  become: true
+  tasks:
+    - name: Set hostname m3
+      hostname:
+        name: m2s-db-n3.osl.team
