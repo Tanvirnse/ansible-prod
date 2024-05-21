@@ -4,7 +4,7 @@
   vars:
     user_to_delete: test
     new_user: newuser
-    new_user_password: 1
+    new_user_password: one
 
   tasks:
     - name: Ensure the old user is absent
