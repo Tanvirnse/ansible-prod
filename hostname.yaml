@@ -1,0 +1,8 @@
+- name: update, time, hostname
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Set hostname
+      hostname:
+        name: m2s-db-n1.osl.team
