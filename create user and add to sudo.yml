@@ -6,13 +6,13 @@
     
     - name: Create user
       user:
-        name: m2sdev
+        name: dev
         password: "{{ 'm2sdev@123#' | password_hash('sha512') }}"
         shell: /bin/bash
         createhome: yes
 
     - name: Add user to sudoers group
       user:
-        name: m2sdev
+        name: dev
         groups: sudo
         append: yes
