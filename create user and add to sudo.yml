@@ -13,6 +13,6 @@
 
     - name: Add user to sudoers group
       user:
-        name: dev
+        name: ums-admin
         groups: sudo
         append: yes
