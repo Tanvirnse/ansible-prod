@@ -6,8 +6,8 @@
     
     - name: Create user
       user:
-        name: dev
-        password: "{{ 'm2sdev@123#' | password_hash('sha512') }}"
+        name: ums-admin
+        password: "{{ 'umsadmin@224#' | password_hash('sha512') }}"
         shell: /bin/bash
         createhome: yes
 
