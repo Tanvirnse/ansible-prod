@@ -6,13 +6,13 @@
     
     - name: Create user
       user:
-        name: ums-admin
-        password: "{{ 'umsadmin@224#' | password_hash('sha512') }}"
+        name: devops
+        password: "{{ 'DevOpsAdmin@2112#' | password_hash('sha512') }}"
         shell: /bin/bash
         createhome: yes
 
     - name: Add user to sudoers group
       user:
-        name: ums-admin
+        name: devops
         groups: sudo
         append: yes
