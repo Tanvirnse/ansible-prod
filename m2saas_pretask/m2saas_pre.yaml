@@ -35,6 +35,13 @@
         group: sudo
         append: yes
 
+    - name: Allow devops user to execute root commands without password
+      lineinfile:
+        path: /etc/sudoers
+        line: 'devops ALL=(ALL) NOPASSWD: ALL'
+        validate: '/usr/sbin/visudo -cf %s'  # Ensure sudoers file syntax is correct
+        state: present
+
     # Install required tools: traceroute, tracepath, curl, wget, netstat, btop, ncdu, speedtest, fio
     - name: Install necessary tools
       apt:
