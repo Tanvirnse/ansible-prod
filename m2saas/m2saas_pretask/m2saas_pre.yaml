@@ -167,7 +167,7 @@
         state: restarted
 
     # Reboot the server at the end
-    - name: Reboot the server
-      reboot:
-        reboot_timeout: 5  # Maximum time to wait for the server to reboot
-        test_command: whoami  # Command to test if the server is back online
+     - name: Restart the server
+      shell: sleep 5 && shutdown -r now
+      async: 1
+      poll: 0
