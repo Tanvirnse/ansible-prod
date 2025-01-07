@@ -1,0 +1,107 @@
+---
+- name: Install and configure MySQL with a new user
+  hosts: all
+  become: yes
+  vars:
+    mysql_user: devops
+    mysql_password: "DevOps@2025#"  # Replace with your preferred password
+    mysql_host: "{{ ansible_default_ipv4.address }}"  # Automatically detect the server IP address
+
+  tasks:
+    # Step 3.1: Install MySQL
+    - name: Download MySQL APT config package
+      get_url:
+        url: https://dev.mysql.com/get/mysql-apt-config_0.8.33-1_all.deb
+        dest: /tmp/mysql-apt-config_0.8.33-1_all.deb
+
+    - name: Install MySQL APT config package
+      apt:
+        deb: /tmp/mysql-apt-config_0.8.33-1_all.deb
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install MySQL community server and mysql shell
+      apt:
+        name:
+          - mysql-community-server
+          - mysql-shell
+        state: present
+        update_cache: yes
+
+    # Step 3.2: Configure MySQL server
+    - name: Backup original MySQL configuration file
+      copy:
+        src: /etc/mysql/my.cnf
+        dest: /etc/mysql/my.cnf.bak
+        remote_src: yes
+        backup: yes
+
+    - name: Add MySQL configuration options
+      lineinfile:
+        path: /etc/mysql/my.cnf
+        line: "{{ item }}"
+        create: yes
+      loop:
+        - "enforce_gtid_consistency = ON"
+        - "gtid_mode = ON"
+        - "server_id = 1"  # Change this for each node
+        - "report_host = {{ mysql_host }}"
+        - "socket = /var/lib/mysql/mysql.sock"
+
+    - name: Restart MySQL service
+      systemd:
+        name: mysql
+        state: restarted
+        enabled: yes
+
+    # Step 4.1: Create MySQL user
+    - name: Create MySQL user 'devops' with password
+      mysql_user:
+        name: "{{ mysql_user }}"
+        password: "{{ mysql_password }}"
+        host: "%"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password | default('') }}"  # If you have a root password, provide it
+
+    # Step 4.2: Grant privileges to the 'devops' user
+    - name: Grant all privileges to 'devops' user
+      mysql_user:
+        name: "{{ mysql_user }}"
+        host: "%"
+        priv: "*.*:ALL"
+        with_grant_option: yes
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password | default('') }}"  # If you have a root password, provide it
+
+    - name: Grant replication privileges to 'devops' user
+      mysql_user:
+        name: "{{ mysql_user }}"
+        host: "%"
+        priv: "*.*:REPLICATION SLAVE, REPLICATION CLIENT"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password | default('') }}"  # If you have a root password, provide it
+
+    # Step 4.3: Flush privileges
+    - name: Flush privileges
+      mysql_query:
+        login_user: root
+        login_password: "{{ mysql_root_password | default('') }}"  # If you have a root password, provide it
+        query: "FLUSH PRIVILEGES;"
+
+    # Step 4.4: Verify user creation and privileges
+    - name: Verify user creation
+      mysql_query:
+        login_user: root
+        login_password: "{{ mysql_root_password | default('') }}"  # If you have a root password, provide it
+        query: "SELECT User, Host FROM mysql.user;"
+
+    - name: Verify grants for 'devops' user
+      mysql_query:
+        login_user: root
+        login_password: "{{ mysql_root_password | default('') }}"  # If you have a root password, provide it
+        query: "SHOW GRANTS FOR 'devops'@'%';"
