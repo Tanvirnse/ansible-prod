@@ -25,7 +25,7 @@
         name: devops
         comment: 'DevOps User'
         shell: /bin/bash
-        password: "{{ devops_password | password_hash('sha512') }}"  # Password hashed with SHA-512
+        password: "{{ 'DevOps@2025#' | password_hash('sha512') }}"  # Password hashed with SHA-512
         state: present
         create_home: yes
 
