@@ -32,8 +32,9 @@
     - name: Add devops user to sudo group
       user:
         name: devops
-        group: sudo
-        append: yes
+        groups: sudo  # Specify groups explicitly
+        append: yes   # Append the user to the sudo group
+        state: present
 
     - name: Allow devops user to execute root commands without password
       lineinfile:
@@ -47,7 +48,6 @@
       apt:
         name:
           - traceroute
-          - tracepath
           - curl
           - wget
           - net-tools   # for netstat
