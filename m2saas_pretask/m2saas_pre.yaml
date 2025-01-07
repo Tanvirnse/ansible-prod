@@ -1,0 +1,96 @@
+---
+- name: Setup and configure the system
+  hosts: all
+  become: yes
+  vars:
+    devops_password: "YourSecurePasswordHere"  # Replace with the desired password
+
+  tasks:
+
+    # Update apt cache and upgrade the system
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600  # Keeps the cache for 1 hour
+
+    - name: Upgrade all apt packages
+      apt:
+        upgrade: yes
+        autoclean: yes
+        autoremove: yes
+
+    # Create 'devops' user with a password and add to sudo group
+    - name: Create devops user with password
+      user:
+        name: devops
+        comment: 'DevOps User'
+        shell: /bin/bash
+        password: "{{ devops_password | password_hash('sha512') }}"  # Password hashed with SHA-512
+        state: present
+        create_home: yes
+
+    - name: Add devops user to sudo group
+      user:
+        name: devops
+        group: sudo
+        append: yes
+
+    # Install required tools: traceroute, tracepath, curl, wget, netstat, btop, ncdu, speedtest, fio
+    - name: Install necessary tools
+      apt:
+        name:
+          - traceroute
+          - tracepath
+          - curl
+          - wget
+          - net-tools   # for netstat
+          - btop
+          - ncdu
+          - speedtest-cli
+          - fio
+        state: present
+        update_cache: yes
+
+    # Install and configure Telegraf
+    - name: Add the InfluxData repository
+      apt_repository:
+        repo: "deb https://repos.influxdata.com/debian stable stable"
+        state: present
+
+    - name: Install Telegraf
+      apt:
+        name: telegraf
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Telegraf service
+      systemd:
+        name: telegraf
+        state: started
+        enabled: yes
+
+    # Configure Telegraf by modifying the configuration file
+    - name: Ensure telegraf configuration is properly set
+      lineinfile:
+        path: /etc/telegraf/telegraf.conf
+        regexp: '^# (.*)'
+        line: '\1'
+        state: present
+        create: yes
+        backup: yes
+
+    - name: Configure Telegraf with custom settings
+      template:
+        src: telegraf.conf.j2
+        dest: /etc/telegraf/telegraf.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify:
+        - Restart telegraf
+
+  handlers:
+    - name: Restart telegraf
+      systemd:
+        name: telegraf
+        state: restarted
