@@ -169,5 +169,5 @@
     # Reboot the server at the end
     - name: Reboot the server
       reboot:
-        reboot_timeout: 600  # Maximum time to wait for the server to reboot
+        reboot_timeout: 5  # Maximum time to wait for the server to reboot
         test_command: whoami  # Command to test if the server is back online
