@@ -77,13 +77,7 @@
         state: present
         update_cache: yes
 
-    - name: Start and enable Telegraf service
-      systemd:
-        name: telegraf
-        state: started
-        enabled: yes
-
-    # Configure Telegraf by modifying the configuration file
+    # Configure Telegraf before starting the service
     - name: Ensure telegraf configuration is properly set
       lineinfile:
         path: /etc/telegraf/telegraf.conf
@@ -102,6 +96,13 @@
         mode: '0644'
       notify:
         - Restart telegraf
+
+    # Start and enable Telegraf service after configuration
+    - name: Start and enable Telegraf service
+      systemd:
+        name: telegraf
+        state: started
+        enabled: yes
 
   handlers:
     - name: Restart telegraf
