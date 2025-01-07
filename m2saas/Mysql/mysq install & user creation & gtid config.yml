@@ -8,6 +8,13 @@
     mysql_host: "{{ ansible_default_ipv4.address }}"  # Automatically detect the server IP address
 
   tasks:
+    # Ensure MySQL collection is installed
+    - name: Install community.mysql collection
+      ansible.builtin.shell:
+        cmd: ansible-galaxy collection install community.mysql
+      become: yes
+      ignore_errors: yes  # Continue even if it's already installed
+
     # Step 3.1: Install MySQL
     - name: Download MySQL APT config package
       get_url:
@@ -58,7 +65,7 @@
 
     # Step 4.1: Create MySQL user
     - name: Create MySQL user 'devops' with password
-      mysql_user:
+      community.mysql.mysql_user:
         name: "{{ mysql_user }}"
         password: "{{ mysql_password }}"
         host: "%"
@@ -68,7 +75,7 @@
 
     # Step 4.2: Grant privileges to the 'devops' user
     - name: Grant all privileges to 'devops' user
-      mysql_user:
+      community.mysql.mysql_user:
         name: "{{ mysql_user }}"
         host: "%"
         priv: "*.*:ALL"
@@ -78,7 +85,7 @@
         login_password: "{{ mysql_root_password | default('') }}"  # If you have a root password, provide it
 
     - name: Grant replication privileges to 'devops' user
-      mysql_user:
+      community.mysql.mysql_user:
         name: "{{ mysql_user }}"
         host: "%"
         priv: "*.*:REPLICATION SLAVE, REPLICATION CLIENT"
@@ -88,20 +95,20 @@
 
     # Step 4.3: Flush privileges
     - name: Flush privileges
-      mysql_query:
+      community.mysql.mysql_query:
         login_user: root
         login_password: "{{ mysql_root_password | default('') }}"  # If you have a root password, provide it
         query: "FLUSH PRIVILEGES;"
 
     # Step 4.4: Verify user creation and privileges
     - name: Verify user creation
-      mysql_query:
+      community.mysql.mysql_query:
         login_user: root
         login_password: "{{ mysql_root_password | default('') }}"  # If you have a root password, provide it
         query: "SELECT User, Host FROM mysql.user;"
 
     - name: Verify grants for 'devops' user
-      mysql_query:
+      community.mysql.mysql_query:
         login_user: root
         login_password: "{{ mysql_root_password | default('') }}"  # If you have a root password, provide it
         query: "SHOW GRANTS FOR 'devops'@'%';"
