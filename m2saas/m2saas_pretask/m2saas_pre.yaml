@@ -104,27 +104,27 @@
         state: started
         enabled: yes
 
-    # Install Logstash using provided commands
-    - name: Install Logstash repository and GPG key
-      shell: |
-        wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elastic-keyring.gpg
-        sudo apt-get install apt-transport-https
-        echo "deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-8.x.list
-        sudo apt-get update
-      become: yes
+#    # Install Logstash using provided commands
+#    - name: Install Logstash repository and GPG key
+#      shell: |
+#        wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elastic-keyring.gpg
+#        sudo apt-get install apt-transport-https
+#       echo "deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-8.x.list
+#        sudo apt-get update
+#      become: yes
 
-    - name: Install Logstash
-      apt:
-        name: logstash
-        state: present
-        update_cache: yes
+#   - name: Install Logstash
+#     apt:
+#       name: logstash
+#       state: present
+#       update_cache: yes
 
     # Start and enable Logstash service
-    - name: Start and enable Logstash service
-      systemd:
-        name: logstash
-        state: started
-        enabled: yes
+#    - name: Start and enable Logstash service
+#     systemd:
+#       name: logstash
+#       state: started
+#       enabled: yes
 
     # Apply kernel tuning parameters
     - name: Apply kernel tuning parameters
