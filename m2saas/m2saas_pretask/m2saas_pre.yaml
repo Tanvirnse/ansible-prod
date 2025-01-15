@@ -59,50 +59,50 @@
         update_cache: yes
 
     # Install Telegraf using provided commands
-#    - name: Add InfluxData GPG key and repository
-#      shell: |
-#        curl --silent --location -O https://repos.influxdata.com/influxdata-archive.key
-#       echo "943666881a1b8d9b849b74caebf02d3465d6beb716510d86a39f6c8e8dac7515  influxdata-archive.key" | sha256sum -c -
-#       cat influxdata-archive.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdata-archive.gpg > /dev/null
-#       echo 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive.gpg] https://repos.influxdata.com/debian stable main' | sudo tee /etc/apt/sources.list.d/influxdata.list
-#      become: yes
+    - name: Add InfluxData GPG key and repository
+      shell: |
+        curl --silent --location -O https://repos.influxdata.com/influxdata-archive.key
+       echo "943666881a1b8d9b849b74caebf02d3465d6beb716510d86a39f6c8e8dac7515  influxdata-archive.key" | sha256sum -c -
+       cat influxdata-archive.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdata-archive.gpg > /dev/null
+       echo 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive.gpg] https://repos.influxdata.com/debian stable main' | sudo tee /etc/apt/sources.list.d/influxdata.list
+      become: yes
 
-#    - name: Update apt cache after adding InfluxData repository
-#     apt:
-#       update_cache: yes
+    - name: Update apt cache after adding InfluxData repository
+     apt:
+       update_cache: yes
 
-#    - name: Install Telegraf
-#     apt:
-#       name: telegraf
-#        state: present
-#        update_cache: yes
+    - name: Install Telegraf
+     apt:
+       name: telegraf
+        state: present
+        update_cache: yes
 
     # Configure Telegraf before starting the service
-#    - name: Ensure telegraf configuration is properly set
-#      lineinfile:
-#       path: /etc/telegraf/telegraf.conf
-#       regexp: '^# (.*)'
-#        line: '\1'
-#       state: present
-#       create: yes
-#        backup: yes
+    - name: Ensure telegraf configuration is properly set
+      lineinfile:
+       path: /etc/telegraf/telegraf.conf
+       regexp: '^# (.*)'
+        line: '\1'
+       state: present
+       create: yes
+        backup: yes
 
-#    - name: Configure Telegraf with custom settings
-#     template:
-#       src: telegraf.conf.j2
-#        dest: /etc/telegraf/telegraf.conf
-#       owner: root
-#       group: root
-#       mode: '0644'
-#      notify:
-#       - Restart telegraf
+    - name: Configure Telegraf with custom settings
+     template:
+       src: telegraf.conf.j2
+        dest: /etc/telegraf/telegraf.conf
+       owner: root
+       group: root
+       mode: '0644'
+      notify:
+       - Restart telegraf
 
     # Start and enable Telegraf service after configuration
-#    - name: Start and enable Telegraf service
-#      systemd:
-#       name: telegraf
-#       state: started
-#        enabled: yes
+    - name: Start and enable Telegraf service
+      systemd:
+       name: telegraf
+       state: started
+        enabled: yes
 
 #    # Install Logstash using provided commands
 #    - name: Install Logstash repository and GPG key
@@ -160,11 +160,11 @@
         - { key: 'net.ipv4.tcp_mtu_probing', value: '1' }
         - { key: 'vm.overcommit_memory', value: '1' }
 
-#  handlers:
-#   - name: Restart telegraf
-#      systemd:
-#        name: telegraf
-#        state: restarted
+  handlers:
+   - name: Restart telegraf
+      systemd:
+        name: telegraf
+        state: restarted
 
     # Reboot the server at the end
     - name: Restart the server
