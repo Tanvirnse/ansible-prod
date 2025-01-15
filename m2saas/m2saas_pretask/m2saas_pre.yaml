@@ -6,7 +6,6 @@
     devops_password: "DevOps@2025#"  # Replace with the desired password
 
   tasks:
-
     # Update apt cache and upgrade the system
     - name: Update apt cache
       apt:
@@ -62,69 +61,47 @@
     - name: Add InfluxData GPG key and repository
       shell: |
         curl --silent --location -O https://repos.influxdata.com/influxdata-archive.key
-       echo "943666881a1b8d9b849b74caebf02d3465d6beb716510d86a39f6c8e8dac7515  influxdata-archive.key" | sha256sum -c -
-       cat influxdata-archive.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdata-archive.gpg > /dev/null
-       echo 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive.gpg] https://repos.influxdata.com/debian stable main' | sudo tee /etc/apt/sources.list.d/influxdata.list
+        echo "943666881a1b8d9b849b74caebf02d3465d6beb716510d86a39f6c8e8dac7515  influxdata-archive.key" | sha256sum -c -
+        cat influxdata-archive.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdata-archive.gpg > /dev/null
+        echo 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive.gpg] https://repos.influxdata.com/debian stable main' | sudo tee /etc/apt/sources.list.d/influxdata.list
       become: yes
 
     - name: Update apt cache after adding InfluxData repository
-     apt:
-       update_cache: yes
+      apt:
+        update_cache: yes
 
     - name: Install Telegraf
-     apt:
-       name: telegraf
+      apt:
+        name: telegraf
         state: present
         update_cache: yes
 
     # Configure Telegraf before starting the service
     - name: Ensure telegraf configuration is properly set
       lineinfile:
-       path: /etc/telegraf/telegraf.conf
-       regexp: '^# (.*)'
+        path: /etc/telegraf/telegraf.conf
+        regexp: '^# (.*)'
         line: '\1'
-       state: present
-       create: yes
+        state: present
+        create: yes
         backup: yes
 
     - name: Configure Telegraf with custom settings
-     template:
-       src: telegraf.conf.j2
+      template:
+        src: telegraf.conf.j2
         dest: /etc/telegraf/telegraf.conf
-       owner: root
-       group: root
-       mode: '0644'
+        owner: root
+        group: root
+        mode: '0644'
       notify:
-       - Restart telegraf
+        - Restart telegraf
 
     # Start and enable Telegraf service after configuration
     - name: Start and enable Telegraf service
       systemd:
-       name: telegraf
-       state: started
+        name: telegraf
+        state: started
         enabled: yes
-
-#    # Install Logstash using provided commands
-#    - name: Install Logstash repository and GPG key
-#      shell: |
-#        wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elastic-keyring.gpg
-#        sudo apt-get install apt-transport-https
-#       echo "deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-8.x.list
-#        sudo apt-get update
-#      become: yes
-
-#   - name: Install Logstash
-#     apt:
-#       name: logstash
-#       state: present
-#       update_cache: yes
-
-    # Start and enable Logstash service
-#    - name: Start and enable Logstash service
-#     systemd:
-#       name: logstash
-#       state: started
-#       enabled: yes
 
     # Apply kernel tuning parameters
     - name: Apply kernel tuning parameters
@@ -159,9 +136,30 @@
         - { key: 'net.ipv4.conf.all.accept_source_route', value: '0' }
         - { key: 'net.ipv4.tcp_mtu_probing', value: '1' }
         - { key: 'vm.overcommit_memory', value: '1' }
+#    # Install Logstash using provided commands
+#    - name: Install Logstash repository and GPG key
+#      shell: |
+#        wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elastic-keyring.gpg
+#        sudo apt-get install apt-transport-https
+#       echo "deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-8.x.list
+#        sudo apt-get update
+#      become: yes
+
+#   - name: Install Logstash
+#     apt:
+#       name: logstash
+#       state: present
+#       update_cache: yes
+
+    # Start and enable Logstash service
+#    - name: Start and enable Logstash service
+#     systemd:
+#       name: logstash
+#       state: started
+#       enabled: yes
 
   handlers:
-   - name: Restart telegraf
+    - name: Restart telegraf
       systemd:
         name: telegraf
         state: restarted
@@ -171,3 +169,7 @@
       shell: sleep 5 && shutdown -r now
       async: 1
       poll: 0
+
+      
+      
+
