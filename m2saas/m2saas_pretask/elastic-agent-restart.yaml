@@ -1,0 +1,11 @@
+- name: Restart Elastic Agent
+  hosts: all   # Define your target host group or specific host
+  become: true             # Escalates privilege to run the task as root
+  tasks:
+    - name: Ensure elastic-agent is restarted
+      ansible.builtin.systemd:
+        name: elastic-agent
+        state: restarted
+        enabled: true      # Ensures the service starts automatically on boot
+      tags:
+        - restart
