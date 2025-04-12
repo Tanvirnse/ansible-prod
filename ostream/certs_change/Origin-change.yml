@@ -2,41 +2,41 @@
 - name: Deploy templated SSL certs and restart Ovenmedia
   hosts: all
   become: true
-  vars:
-    ssl_cert_path: /usr/share/ovenmediaengine/certs/udvashunmesh.com
+ # vars:
+  #  ssl_cert_path: /usr/share/ovenmediaengine/certs/udvashunmesh.com
 
   tasks:
-    - name: Ensure SSL cert directory exists
-      file:
-        path: "{{ ssl_cert_path }}"
-        state: directory
-        mode: '0755'
+ #   - name: Ensure SSL cert directory exists
+ #     file:
+  #      path: "{{ ssl_cert_path }}"
+  #      state: directory
+  #      mode: '0755'
 
-    - name: Deploy STAR.udvashunmesh.com.pem
-      template:
-        src: "STAR.udvashunmesh.com.pem.j2"
-        dest: "{{ ssl_cert_path }}/STAR.udvashunmesh.com.pem"
-        owner: root
-        group: root
-        mode: '0644'
+  #  - name: Deploy STAR.udvashunmesh.com.pem
+  #    template:
+  #      src: "STAR.udvashunmesh.com.pem.j2"
+  #      dest: "{{ ssl_cert_path }}/STAR.udvashunmesh.com.pem"
+  #      owner: root
+  #      group: root
+   #     mode: '0644'
 
-    - name: Deploy STAR.udvashunmesh.com.key.pem
-      template:
-        src: "STAR.udvashunmesh.com.key.pem.j2"
-        dest: "{{ ssl_cert_path }}/STAR.udvashunmesh.com.key.pem"
-        owner: root
-        group: root
-        mode: '0600'
+  #  - name: Deploy STAR.udvashunmesh.com.key.pem
+  #    template:
+  #      src: "STAR.udvashunmesh.com.key.pem.j2"
+  #      dest: "{{ ssl_cert_path }}/STAR.udvashunmesh.com.key.pem"
+   #     owner: root
+  #      group: root
+   #     mode: '0600'
 
-    - name: Deploy STAR.udvashunmesh.com.fullchain.pem
-      template:
-        src: "STAR.udvashunmesh.com.fullchain.pem.j2"
-        dest: "{{ ssl_cert_path }}/STAR.udvashunmesh.com.fullchain.pem"
-        owner: root
-        group: root
-        mode: '0644'
+  #  - name: Deploy STAR.udvashunmesh.com.fullchain.pem
+  #    template:
+  #      src: "STAR.udvashunmesh.com.fullchain.pem.j2"
+   #     dest: "{{ ssl_cert_path }}/STAR.udvashunmesh.com.fullchain.pem"
+    #    owner: root
+   #     group: root
+   #     mode: '0644'
 
-#    - name: Restart ovenmedia
-#      service:
-#        name: ovenmediaengine
-#        state: restarted
+    - name: Restart ovenmedia
+      service:
+        name: ovenmediaengine
+        state: restarted
