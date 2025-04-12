@@ -1,6 +1,6 @@
 ---
 - name: Deploy templated SSL certs and restart Nginx
-  hosts: webservers
+  hosts: all
   become: true
   vars:
     ssl_cert_path: /etc/certs/udvashunmesh.com
@@ -14,7 +14,7 @@
 
     - name: Deploy STAR.udvashunmesh.com.pem
       template:
-        src: "templates/STAR.udvashunmesh.com.pem.j2"
+        src: "STAR.udvashunmesh.com.pem.j2"
         dest: "{{ ssl_cert_path }}/STAR.udvashunmesh.com.pem"
         owner: root
         group: root
@@ -22,7 +22,7 @@
 
     - name: Deploy STAR.udvashunmesh.com.key.pem
       template:
-        src: "templates/STAR.udvashunmesh.com.key.pem.j2"
+        src: "STAR.udvashunmesh.com.key.pem.j2"
         dest: "{{ ssl_cert_path }}/STAR.udvashunmesh.com.key.pem"
         owner: root
         group: root
@@ -30,7 +30,7 @@
 
     - name: Deploy STAR.udvashunmesh.com.fullchain.pem
       template:
-        src: "templates/STAR.udvashunmesh.com.fullchain.pem.j2"
+        src: "STAR.udvashunmesh.com.fullchain.pem.j2"
         dest: "{{ ssl_cert_path }}/STAR.udvashunmesh.com.fullchain.pem"
         owner: root
         group: root
