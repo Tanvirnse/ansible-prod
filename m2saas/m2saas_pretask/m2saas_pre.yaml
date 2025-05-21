@@ -19,28 +19,28 @@
         autoremove: yes
 
     # Create 'devops' user with a password and add to sudo group
-    - name: Create devops user with password
-      user:
-        name: devops
-        comment: 'DevOps User'
-        shell: /bin/bash
-        password: "{{ 'DevOps@2025#' | password_hash('sha512') }}"  # Password hashed with SHA-512
-        state: present
-        create_home: yes
+#    - name: Create devops user with password
+#      user:
+#        name: devops
+#        comment: 'DevOps User'
+#        shell: /bin/bash
+#        password: "{{ 'DevOps@2025#' | password_hash('sha512') }}"  # Password hashed with SHA-512
+#        state: present
+#        create_home: yes
 
-    - name: Add devops user to sudo group
-      user:
-        name: devops
-        groups: sudo  # Specify groups explicitly
-        append: yes   # Append the user to the sudo group
-        state: present
+#    - name: Add devops user to sudo group
+#     user:
+#        name: devops
+#       groups: sudo  # Specify groups explicitly
+#        append: yes   # Append the user to the sudo group
+#        state: present
 
-    - name: Allow devops user to execute root commands without password
-      lineinfile:
-        path: /etc/sudoers
-        line: 'devops ALL=(ALL) NOPASSWD: ALL'
-        validate: '/usr/sbin/visudo -cf %s'  # Ensure sudoers file syntax is correct
-        state: present
+#    - name: Allow devops user to execute root commands without password
+#      lineinfile:
+#        path: /etc/sudoers
+#        line: 'devops ALL=(ALL) NOPASSWD: ALL'
+#        validate: '/usr/sbin/visudo -cf %s'  # Ensure sudoers file syntax is correct
+#       state: present
 
     # Install required tools: traceroute, tracepath, curl, wget, netstat, btop, ncdu, speedtest, fio
     - name: Install necessary tools
@@ -165,10 +165,10 @@
         state: restarted
 
     # Reboot the server at the end
-    - name: Restart the server
-      shell: sleep 5 && shutdown -r now
-      async: 1
-      poll: 0
+#    - name: Restart the server
+#      shell: sleep 5 && shutdown -r now
+#      async: 1
+#     poll: 0
 
       
       
