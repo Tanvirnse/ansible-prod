@@ -1,60 +1,102 @@
-- name: Install OvenMediaEngine
+---
+- name: Install and configure OvenMediaEngine on Ubuntu
   hosts: all
-  become: yes
-
+  become: true
   vars:
     ome_version: "0.18.0"
-    ome_tar: "OvenMediaEngine-{{ ome_version }}.tar.gz"
-    ome_dir: "OvenMediaEngine-{{ ome_version }}"
-
+    ome_tarball_url: "https://github.com/AirenSoft/OvenMediaEngine/archive/v{{ ome_version }}.tar.gz"
+    ome_tarball: "/tmp/OvenMediaEngine-{{ ome_version }}.tar.gz"
+    ome_extract_dir: "/tmp/OvenMediaEngine-{{ ome_version }}"
+    ome_service_name: "ovenmediaengine"
   tasks:
-
-    - name: Install required packages for Ubuntu
-      apt:
-        name:
-          - curl
-          - make
-          - gcc
-          - g++
-          - cmake
-          - libssl-dev
-          - libcurl4-openssl-dev
-          - zlib1g-dev
-          - libmicrohttpd-dev
+    - name: Update apt cache
+      ansible.builtin.apt:
         update_cache: yes
-      when: ansible_facts['os_family'] == "Debian"
+        cache_valid_time: 3600
+      register: apt_update
+      retries: 3
+      delay: 5
+      until: apt_update is success
 
-    - name: Download OvenMediaEngine source
-      get_url:
-        url: "https://github.com/AirenSoft/OvenMediaEngine/archive/v{{ ome_version }}.tar.gz"
-        dest: "/tmp/{{ ome_tar }}"
+    - name: Download OvenMediaEngine tarball
+      ansible.builtin.get_url:
+        url: "{{ ome_tarball_url }}"
+        dest: "{{ ome_tarball }}"
         mode: '0644'
+      register: download_tarball
+      retries: 3
+      delay: 5
+      until: download_tarball is success
 
-    - name: Extract OvenMediaEngine source
-      unarchive:
-        src: "/tmp/{{ ome_tar }}"
-        dest: /opt
+    - name: Create extraction directory
+      ansible.builtin.file:
+        path: "{{ ome_extract_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Extract OvenMediaEngine tarball
+      ansible.builtin.unarchive:
+        src: "{{ ome_tarball }}"
+        dest: "/tmp"
         remote_src: yes
+        creates: "{{ ome_extract_dir }}/README.md"
+      register: extract_tarball
 
-    - name: Run prerequisites.sh
-      command: ./misc/prerequisites.sh
-      args:
-        chdir: "/opt/{{ ome_dir }}"
-      environment:
-        DEBIAN_FRONTEND: noninteractive
+    - name: Run prerequisites script
+      ansible.builtin.command:
+        cmd: "{{ ome_extract_dir }}/misc/prerequisites.sh"
+        creates: "{{ ome_extract_dir }}/misc/prerequisites_done"
+      register: prereq_result
+      changed_when: prereq_result.rc == 0
 
-    - name: Build OvenMediaEngine
-      make:
-        chdir: "/opt/{{ ome_dir }}/src"
-        target: release
+    - name: Mark prerequisites as done
+      ansible.builtin.file:
+        path: "{{ ome_extract_dir }}/misc/prerequisites_done"
+        state: touch
+        mode: '0644'
+      when: prereq_result.rc == 0
+
+    - name: Build OvenMediaEngine (make release)
+      ansible.builtin.command:
+        cmd: make release
+        chdir: "{{ ome_extract_dir }}/src"
+        creates: "{{ ome_extract_dir }}/src/bin/RELEASE/OvenMediaEngine"
+      register: build_result
+      changed_when: build_result.rc == 0
 
     - name: Install OvenMediaEngine
-      command: make install
-      args:
-        chdir: "/opt/{{ ome_dir }}/src"
+      ansible.builtin.command:
+        cmd: make install
+        chdir: "{{ ome_extract_dir }}/src"
+        creates: "/usr/bin/OvenMediaEngine"
+      register: install_result
+      changed_when: install_result.rc == 0
 
-    - name: Start OvenMediaEngine service
-      systemd:
-        name: ovenmediaengine
+    - name: Ensure OvenMediaEngine service is started
+      ansible.builtin.systemd:
+        name: "{{ ome_service_name }}"
         state: started
+        daemon_reload: yes
+      register: service_start
+      retries: 3
+      delay: 5
+      until: service_start is success
+
+    - name: Enable OvenMediaEngine service on boot
+      ansible.builtin.systemd:
+        name: "{{ ome_service_name }}.service"
         enabled: yes
+      register: service_enable
+      changed_when: service_enable.changed
+
+    - name: Clean up downloaded tarball
+      ansible.builtin.file:
+        path: "{{ ome_tarball }}"
+        state: absent
+      when: install_result.rc == 0
+
+    - name: Clean up extracted directory
+      ansible.builtin.file:
+        path: "{{ ome_extract_dir }}"
+        state: absent
+      when: install_result.rc == 0
