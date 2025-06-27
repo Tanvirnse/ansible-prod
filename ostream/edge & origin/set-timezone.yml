@@ -1,12 +1,7 @@
 - name: update, time, hostname
   hosts: all
   become: true
-  tasks:
-    - name: install updates (Ubuntu)
-      apt:
-        upgrade: dist
-        update_cache: yes   
-  
+  tasks:  
     - name: Set timezone to Asia/Dhaka
       timezone:
         name: Asia/Dhaka

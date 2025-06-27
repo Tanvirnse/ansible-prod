@@ -1,0 +1,28 @@
+- name: Setup and configure the system
+  hosts: all
+  become: yes
+  vars:
+    devops_password: "Dev@123#"
+
+  tasks:
+    - name: Create dev user with password
+      user:
+        name: dev
+        comment: 'Dev'
+        shell: /bin/bash
+        password: "{{ devops_password | password_hash('sha512') }}"
+        state: present
+        create_home: yes
+
+    - name: Add dev user to sudo group
+      user:
+        name: dev
+        groups: sudo
+        append: yes
+        state: present
+
+    - name: Allow dev user to execute root commands without password
+      lineinfile:
+        path: /etc/sudoers
+        line: 'dev ALL=(ALL) NOPASSWD: ALL'
+        validate: '/usr/sbin/visudo -cf %s'

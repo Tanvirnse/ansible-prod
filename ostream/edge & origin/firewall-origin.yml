@@ -1,0 +1,39 @@
+---
+- name: Set up UFW with custom rules
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Ensure UFW is installed
+      apt:
+        name: ufw
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Reset UFW to remove all existing rules
+      command: ufw --force reset
+
+    - name: Allow BO All
+      command: ufw allow from 103.163.115.224/24 comment 'BO All'
+
+    - name: Allow BTS All
+      command: ufw allow from 103.234.24.103/21 comment 'BTS All'
+
+    - name: Allow Link3 All
+      command: ufw allow from 123.200.10.160/23 comment 'Link3 All'
+
+    - name: Set default policy to deny incoming
+      command: ufw default deny incoming
+
+    - name: Enable UFW
+      command: ufw --force enable
+
+    - name: Reload UFW
+      command: ufw reload
+
+    - name: Ensure UFW service is started and enabled at boot
+      systemd:
+        name: ufw
+        state: started
+        enabled: yes

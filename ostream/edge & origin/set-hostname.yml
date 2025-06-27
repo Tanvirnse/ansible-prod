@@ -1,0 +1,7 @@
+- name: update, time, hostname
+  hosts: all
+  become: true
+  tasks:
+    - name: Set hostname
+      hostname:
+        name: maradb-n2

@@ -14,12 +14,11 @@
   debug = false
   quiet = false
   logfile = ""
-  hostname = "{{ ansible_hostname }}"
   omit_hostname = false
 
 [[outputs.influxdb]]
-  urls = ["http://monitor.osl.team:8086"]
-  database = "rnd-prod"  
+  urls = ["http://monitor.osl.one:8086"]
+  database = "telegraf_private_community"  
   timeout = "5s"
 
 [[inputs.cpu]]

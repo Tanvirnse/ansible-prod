@@ -1,0 +1,60 @@
+- name: Install OvenMediaEngine
+  hosts: all
+  become: yes
+
+  vars:
+    ome_version: "0.18.0"
+    ome_tar: "OvenMediaEngine-{{ ome_version }}.tar.gz"
+    ome_dir: "OvenMediaEngine-{{ ome_version }}"
+
+  tasks:
+
+    - name: Install required packages for Ubuntu
+      apt:
+        name:
+          - curl
+          - make
+          - gcc
+          - g++
+          - cmake
+          - libssl-dev
+          - libcurl4-openssl-dev
+          - zlib1g-dev
+          - libmicrohttpd-dev
+        update_cache: yes
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Download OvenMediaEngine source
+      get_url:
+        url: "https://github.com/AirenSoft/OvenMediaEngine/archive/v{{ ome_version }}.tar.gz"
+        dest: "/tmp/{{ ome_tar }}"
+        mode: '0644'
+
+    - name: Extract OvenMediaEngine source
+      unarchive:
+        src: "/tmp/{{ ome_tar }}"
+        dest: /opt
+        remote_src: yes
+
+    - name: Run prerequisites.sh
+      command: ./misc/prerequisites.sh
+      args:
+        chdir: "/opt/{{ ome_dir }}"
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+
+    - name: Build OvenMediaEngine
+      make:
+        chdir: "/opt/{{ ome_dir }}/src"
+        target: release
+
+    - name: Install OvenMediaEngine
+      command: make install
+      args:
+        chdir: "/opt/{{ ome_dir }}/src"
+
+    - name: Start OvenMediaEngine service
+      systemd:
+        name: ovenmediaengine
+        state: started
+        enabled: yes

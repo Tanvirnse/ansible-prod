@@ -1,0 +1,82 @@
+- name: Network and Disk Performance Test
+  hosts: all
+  become: yes
+  vars:
+    speedtest_output: "/tmp/speedtest_result.txt"
+    disk_test_output: "/tmp/disk_test_result.txt"
+    test_file: "/tmp/testfile"
+
+  tasks:
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - curl
+          - gnupg
+        state: present
+        update_cache: yes
+
+    - name: Add Ookla GPG key
+      apt_key:
+        url: https://packagecloud.io/ookla/speedtest-cli/gpgkey
+        state: present
+
+    - name: Add Speedtest repository
+      apt_repository:
+        repo: "deb https://packagecloud.io/ookla/speedtest-cli/ubuntu/ $(lsb_release -cs) main"
+        state: present
+        filename: speedtest
+
+    - name: Install Speedtest CLI
+      apt:
+        name: speedtest
+        state: present
+        update_cache: yes
+
+    - name: Run Speedtest CLI and save output
+      shell: speedtest --accept-license --accept-gdpr > {{ speedtest_output }}
+      args:
+        executable: /bin/bash
+
+    - name: Show Speedtest output
+      shell: cat {{ speedtest_output }}
+      register: speedtest_result
+      changed_when: false
+
+    - name: Display speedtest output
+      debug:
+        msg: "{{ speedtest_result.stdout }}"
+
+    - name: Run disk write test (1M block size)
+      shell: dd if=/dev/zero of={{ test_file }} bs=1M count=100 oflag=direct >> {{ disk_test_output }} 2>&1
+      args:
+        executable: /bin/bash
+
+    - name: Run disk write test (4K block size)
+      shell: dd if=/dev/zero of={{ test_file }} bs=4K count=100000 oflag=direct >> {{ disk_test_output }} 2>&1
+      args:
+        executable: /bin/bash
+
+    - name: Run disk read test (1M block size)
+      shell: dd if={{ test_file }} of=/dev/null bs=1M >> {{ disk_test_output }} 2>&1
+      args:
+        executable: /bin/bash
+
+    - name: Run disk read test (4K block size)
+      shell: dd if={{ test_file }} of=/dev/null bs=4K >> {{ disk_test_output }} 2>&1
+      args:
+        executable: /bin/bash
+
+    - name: Show disk test output
+      shell: cat {{ disk_test_output }}
+      register: disk_test_result
+      changed_when: false
+
+    - name: Display disk test output
+      debug:
+        msg: "{{ disk_test_result.stdout }}"
+
+    - name: Clean up test file
+      file:
+        path: "{{ test_file }}"
+        state: absent
