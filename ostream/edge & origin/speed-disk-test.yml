@@ -1,82 +1,114 @@
-- name: Network and Disk Performance Test
+---
+- name: Perform bandwidth and disk speed tests on Ubuntu
   hosts: all
-  become: yes
+  become: true
   vars:
-    speedtest_output: "/tmp/speedtest_result.txt"
-    disk_test_output: "/tmp/disk_test_result.txt"
-    test_file: "/tmp/testfile"
-
+    test_dir: /tmp/test_results
+    speedtest_output: "{{ test_dir }}/speedtest_result.txt"
+    fio_1m_output: "{{ test_dir }}/fio_1m_result.txt"
+    fio_4k_output: "{{ test_dir }}/fio_4k_result.txt"
   tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      register: apt_update
+      retries: 3
+      delay: 5
+      until: apt_update is success
 
-    - name: Install prerequisites
-      apt:
+    - name: Install required packages
+      ansible.builtin.apt:
         name:
-          - curl
-          - gnupg
+          - speedtest-cli
+          - fio
         state: present
-        update_cache: yes
+      register: apt_install
+      retries: 3
+      delay: 5
+      until: apt_install is success
 
-    - name: Add Ookla GPG key
-      apt_key:
-        url: https://packagecloud.io/ookla/speedtest-cli/gpgkey
-        state: present
+    - name: Create test results directory
+      ansible.builtin.file:
+        path: "{{ test_dir }}"
+        state: directory
+        mode: '0755'
 
-    - name: Add Speedtest repository
-      apt_repository:
-        repo: "deb https://packagecloud.io/ookla/speedtest-cli/ubuntu/ $(lsb_release -cs) main"
-        state: present
-        filename: speedtest
-
-    - name: Install Speedtest CLI
-      apt:
-        name: speedtest
-        state: present
-        update_cache: yes
-
-    - name: Run Speedtest CLI and save output
-      shell: speedtest --accept-license --accept-gdpr > {{ speedtest_output }}
-      args:
-        executable: /bin/bash
-
-    - name: Show Speedtest output
-      shell: cat {{ speedtest_output }}
+    - name: Run speedtest-cli and save output
+      ansible.builtin.command:
+        cmd: speedtest-cli --simple
+        creates: "{{ speedtest_output }}"
       register: speedtest_result
       changed_when: false
 
-    - name: Display speedtest output
-      debug:
-        msg: "{{ speedtest_result.stdout }}"
+    - name: Save speedtest-cli results to file
+      ansible.builtin.copy:
+        content: "{{ speedtest_result.stdout }}"
+        dest: "{{ speedtest_output }}"
+        mode: '0644'
 
-    - name: Run disk write test (1M block size)
-      shell: dd if=/dev/zero of={{ test_file }} bs=1M count=100 oflag=direct >> {{ disk_test_output }} 2>&1
+    - name: Run fio test with 1MB block size
+      ansible.builtin.command:
+        cmd: >
+          fio --name=write_1m --directory={{ test_dir }} --size=1G
+          --bs=1M --rw=write --ioengine=libaio --direct=1
+          --numjobs=1 --runtime=60 --time_based --group_reporting
+          --output={{ fio_1m_output }}
       args:
-        executable: /bin/bash
-
-    - name: Run disk write test (4K block size)
-      shell: dd if=/dev/zero of={{ test_file }} bs=4K count=100000 oflag=direct >> {{ disk_test_output }} 2>&1
-      args:
-        executable: /bin/bash
-
-    - name: Run disk read test (1M block size)
-      shell: dd if={{ test_file }} of=/dev/null bs=1M >> {{ disk_test_output }} 2>&1
-      args:
-        executable: /bin/bash
-
-    - name: Run disk read test (4K block size)
-      shell: dd if={{ test_file }} of=/dev/null bs=4K >> {{ disk_test_output }} 2>&1
-      args:
-        executable: /bin/bash
-
-    - name: Show disk test output
-      shell: cat {{ disk_test_output }}
-      register: disk_test_result
+        creates: "{{ fio_1m_output }}"
+      register: fio_1m_result
       changed_when: false
 
-    - name: Display disk test output
-      debug:
-        msg: "{{ disk_test_result.stdout }}"
+    - name: Run fio test with 4KB block size
+      ansible.builtin.command:
+        cmd: >
+          fio --name=write_4k --directory={{ test_dir }} --size=1G
+          --bs=4K --rw=randwrite --ioengine=libaio --direct=1
+          --iodepth=64 --numjobs=1 --runtime=60 --time_based
+          --group_reporting --output={{ fio_4k_output }}
+      args:
+        creates: "{{ fio_4k_output }}"
+      register: fio_4k_result
+      changed_when: false
 
-    - name: Clean up test file
-      file:
-        path: "{{ test_file }}"
-        state: absent
+    - name: Fetch speedtest results
+      ansible.builtin.fetch:
+        src: "{{ speedtest_output }}"
+        dest: "results/{{ inventory_hostname }}_speedtest_result.txt"
+        flat: yes
+
+    - name: Fetch fio 1MB results
+      ansible.builtin.fetch:
+        src: "{{ fio_1m_output }}"
+        dest: "results/{{ inventory_hostname }}_fio_1m_result.txt"
+        flat: yes
+
+    - name: Fetch fio 4KB results
+      ansible.builtin.fetch:
+        src: "{{ fio_4k_output }}"
+        dest: "results/{{ inventory_hostname }}_fio_4k_result.txt"
+        flat: yes
+
+    - name: Display speedtest results
+      ansible.builtin.debug:
+        msg: "{{ speedtest_result.stdout_lines }}"
+
+    - name: Display fio 1MB results
+      ansible.builtin.command:
+        cmd: cat {{ fio_1m_output }}
+      register: fio_1m_display
+      changed_when: false
+
+    - name: Display fio 4KB results
+      ansible.builtin.command:
+        cmd: cat {{ fio_4k_output }}
+      register: fio_4k_display
+      changed_when: false
+
+    - name: Show fio 1MB results
+      ansible.builtin.debug:
+        msg: "{{ fio_1m_display.stdout_lines }}"
+
+    - name: Show fio 4KB results
+      ansible.builtin.debug:
+        msg: "{{ fio_4k_display.stdout_lines }}"
