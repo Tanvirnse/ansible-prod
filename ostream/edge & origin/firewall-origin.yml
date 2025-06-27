@@ -15,13 +15,13 @@
       command: ufw --force reset
 
     - name: Allow BO All
-      command: ufw allow from 103.163.115.224/24 comment 'BO All'
+      command: ufw allow from 182.163.115.224/29 comment 'BOL All'
 
     - name: Allow BTS All
-      command: ufw allow from 103.234.24.103/21 comment 'BTS All'
+      command: ufw allow from 103.234.24.176/29 comment 'BTS All'
 
     - name: Allow Link3 All
-      command: ufw allow from 123.200.10.160/23 comment 'Link3 All'
+      command: ufw allow from 123.200.10.160/28 comment 'Link3 All'
 
     - name: Set default policy to deny incoming
       command: ufw default deny incoming
