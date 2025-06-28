@@ -34,7 +34,7 @@
 
     - name: Configure Telegraf with custom settings
       template:
-        src: j2-config/telegraf.conf.j2
+        src: j2-configs/telegraf.conf.j2
         dest: /etc/telegraf/telegraf.conf
         owner: root
         group: root
