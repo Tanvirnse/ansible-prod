@@ -23,12 +23,6 @@
         owner: root
         group: root
 
-    - name: Ensure dirmngr service is started
-      ansible.builtin.service:
-        name: dirmngr
-        state: started
-        enabled: yes
-
     - name: Import ClickHouse GPG key
       ansible.builtin.command:
         cmd: gpg --no-default-keyring --keyring /usr/share/keyrings/clickhouse-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 8919F6BD2B48D754
