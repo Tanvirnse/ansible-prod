@@ -19,15 +19,15 @@
       ansible.builtin.command:
         cmd: gpg --no-default-keyring --keyring /usr/share/keyrings/clickhouse-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 8919F6BD2B48D754
         creates: /usr/share/keyrings/clickhouse-keyring.gpg
-      args:
-        warn: no  # Suppress warning about using command module
+      register: gpg_result
+      changed_when: gpg_result.rc == 0
 
     - name: Add ClickHouse repository
       ansible.builtin.shell:
         cmd: echo "deb [signed-by=/usr/share/keyrings/clickhouse-keyring.gpg] https://packages.clickhouse.com/deb stable main" | tee /etc/apt/sources.list.d/clickhouse.list
         creates: /etc/apt/sources.list.d/clickhouse.list
-      args:
-        warn: no  # Suppress warning about using shell module
+      register: repo_result
+      changed_when: repo_result.rc == 0
 
     - name: Update apt cache
       ansible.builtin.apt:
