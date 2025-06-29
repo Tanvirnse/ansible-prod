@@ -6,15 +6,24 @@
     clickhouse_version: "24.8"  # Specify desired version
     clickhouse_password: "ZoNq3hHlglto7qc"  # Change this to a secure password
   tasks:
-    - name: Add ClickHouse repository key
+    - name: Ensure required packages are installed
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - dirmngr
+        state: present
+        update_cache: yes
+
+    - name: Download ClickHouse GPG key
       ansible.builtin.get_url:
-        url: https://packages.clickhouse.com/deb/pool/stable/clickhouse-client_{{ clickhouse_version }}-1_amd64.deb
-        dest: /tmp/clickhouse-client.deb
+        url: https://packages.clickhouse.com/keys/clickhouse-keyring.gpg
+        dest: /usr/share/keyrings/clickhouse-keyring.gpg
         mode: '0644'
 
     - name: Add ClickHouse repository
       ansible.builtin.apt_repository:
-        repo: deb https://packages.clickhouse.com/deb stable main
+        repo: "deb [signed-by=/usr/share/keyrings/clickhouse-keyring.gpg] https://packages.clickhouse.com/deb stable main"
         state: present
         filename: clickhouse
         update_cache: yes
