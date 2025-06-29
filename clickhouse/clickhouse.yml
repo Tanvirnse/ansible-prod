@@ -15,12 +15,35 @@
         state: present
         update_cache: yes
 
+    - name: Ensure GPG home directory exists
+      ansible.builtin.file:
+        path: /root/.gnupg
+        state: directory
+        mode: '0700'
+        owner: root
+        group: root
+
+    - name: Ensure dirmngr service is started
+      ansible.builtin.service:
+        name: dirmngr
+        state: started
+        enabled: yes
+
     - name: Import ClickHouse GPG key
       ansible.builtin.command:
         cmd: gpg --no-default-keyring --keyring /usr/share/keyrings/clickhouse-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 8919F6BD2B48D754
         creates: /usr/share/keyrings/clickhouse-keyring.gpg
       register: gpg_result
       changed_when: gpg_result.rc == 0
+      failed_when: gpg_result.rc != 0 and 'keyserver receive failed' not in gpg_result.stderr
+      ignore_errors: yes
+
+    - name: Fallback to download ClickHouse GPG key directly if keyserver fails
+      ansible.builtin.get_url:
+        url: https://packages.clickhouse.com/keys/clickhouse-keyring.gpg
+        dest: /usr/share/keyrings/clickhouse-keyring.gpg
+        mode: '0644'
+      when: gpg_result.rc != 0
 
     - name: Add ClickHouse repository
       ansible.builtin.shell:
