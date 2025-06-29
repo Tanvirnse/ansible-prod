@@ -1,6 +1,6 @@
 ---
 - name: Install and configure ClickHouse
-  hosts: clickhouse_servers
+  hosts: servers
   become: yes
   vars:
     clickhouse_version: "24.8"  # Specify desired version
