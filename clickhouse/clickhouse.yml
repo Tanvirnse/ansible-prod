@@ -11,44 +11,27 @@
         name:
           - apt-transport-https
           - ca-certificates
-          - dirmngr
+          - curl
+          - gnupg
         state: present
         update_cache: yes
 
-    - name: Ensure GPG home directory exists
-      ansible.builtin.file:
-        path: /root/.gnupg
-        state: directory
-        mode: '0700'
-        owner: root
-        group: root
-
-    - name: Import ClickHouse GPG key
-      ansible.builtin.command:
-        cmd: gpg --no-default-keyring --keyring /usr/share/keyrings/clickhouse-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3E4AD4719DDE9A38
+    - name: Download and dearmor ClickHouse GPG key
+      ansible.builtin.shell:
+        cmd: curl -fsSL 'https://packages.clickhouse.com/rpm/lts/repodata/repomd.xml.key' | gpg --dearmor -o /usr/share/keyrings/clickhouse-keyring.gpg
         creates: /usr/share/keyrings/clickhouse-keyring.gpg
       register: gpg_result
       changed_when: gpg_result.rc == 0
-      failed_when: gpg_result.rc != 0 and 'keyserver receive failed' not in gpg_result.stderr
-      ignore_errors: yes
 
-    - name: Fallback to download ClickHouse GPG key directly if keyserver fails
-      ansible.builtin.get_url:
-        url: https://packages.clickhouse.com/keys/clickhouse-keyring.gpg
-        dest: /usr/share/keyrings/clickhouse-keyring.gpg
-        mode: '0644'
-      when: gpg_result.rc != 0
-
-    - name: Export GPG key to apt trusted keyring
+    - name: Get system architecture
       ansible.builtin.command:
-        cmd: gpg --no-default-keyring --keyring /usr/share/keyrings/clickhouse-keyring.gpg --export 3E4AD4719DDE9A38 | apt-key add -
-        creates: /etc/apt/trusted.gpg.d/clickhouse-keyring.gpg
-      register: apt_key_result
-      changed_when: apt_key_result.rc == 0
+        cmd: dpkg --print-architecture
+      register: arch_result
+      changed_when: false
 
     - name: Add ClickHouse repository
       ansible.builtin.shell:
-        cmd: echo "deb [signed-by=/usr/share/keyrings/clickhouse-keyring.gpg] https://packages.clickhouse.com/deb stable main" | tee /etc/apt/sources.list.d/clickhouse.list
+        cmd: echo "deb [signed-by=/usr/share/keyrings/clickhouse-keyring.gpg arch={{ arch_result.stdout }}] https://packages.clickhouse.com/deb stable main" | tee /etc/apt/sources.list.d/clickhouse.list
         creates: /etc/apt/sources.list.d/clickhouse.list
       register: repo_result
       changed_when: repo_result.rc == 0
