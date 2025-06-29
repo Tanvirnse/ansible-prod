@@ -1,0 +1,73 @@
+---
+- name: Install and configure ClickHouse
+  hosts: clickhouse_servers
+  become: yes
+  vars:
+    clickhouse_version: "24.8"  # Specify desired version
+    clickhouse_password: "ZoNq3hHlglto7qc"  # Change this to a secure password
+  tasks:
+    - name: Add ClickHouse repository key
+      ansible.builtin.get_url:
+        url: https://packages.clickhouse.com/deb/pool/stable/clickhouse-client_{{ clickhouse_version }}-1_amd64.deb
+        dest: /tmp/clickhouse-client.deb
+        mode: '0644'
+
+    - name: Add ClickHouse repository
+      ansible.builtin.apt_repository:
+        repo: deb https://packages.clickhouse.com/deb stable main
+        state: present
+        filename: clickhouse
+        update_cache: yes
+
+    - name: Install ClickHouse packages
+      ansible.builtin.apt:
+        name:
+          - clickhouse-server
+          - clickhouse-client
+          - clickhouse-common-static
+        state: present
+        update_cache: yes
+
+    - name: Ensure ClickHouse configuration directory exists
+      ansible.builtin.file:
+        path: /etc/clickhouse-server
+        state: directory
+        mode: '0755'
+
+    - name: Configure ClickHouse to listen on all interfaces
+      ansible.builtin.lineinfile:
+        path: /etc/clickhouse-server/config.xml
+        regexp: '<!-- <listen_host>0.0.0.0</listen_host> -->'
+        line: '<listen_host>0.0.0.0</listen_host>'
+        backup: yes
+      notify: Restart ClickHouse
+
+    - name: Create users configuration file
+      ansible.builtin.copy:
+        content: |
+          <clickhouse>
+            <users>
+              <default>
+                <password_sha256_hex>{{ clickhouse_password | hash('sha256') }}</password_sha256_hex>
+                <access_management>1</access_management>
+                <networks>
+                  <ip>::/0</ip>
+                </networks>
+              </default>
+            </users>
+          </clickhouse>
+        dest: /etc/clickhouse-server/users.d/default-password.xml
+        mode: '0644'
+      notify: Restart ClickHouse
+
+    - name: Ensure ClickHouse service is started and enabled
+      ansible.builtin.service:
+        name: clickhouse-server
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Restart ClickHouse
+      ansible.builtin.service:
+        name: clickhouse-server
+        state: restarted
