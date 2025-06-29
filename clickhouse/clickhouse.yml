@@ -25,7 +25,7 @@
 
     - name: Import ClickHouse GPG key
       ansible.builtin.command:
-        cmd: gpg --no-default-keyring --keyring /usr/share/keyrings/clickhouse-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 8919F6BD2B48D754
+        cmd: gpg --no-default-keyring --keyring /usr/share/keyrings/clickhouse-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3E4AD4719DDE9A38
         creates: /usr/share/keyrings/clickhouse-keyring.gpg
       register: gpg_result
       changed_when: gpg_result.rc == 0
@@ -38,6 +38,13 @@
         dest: /usr/share/keyrings/clickhouse-keyring.gpg
         mode: '0644'
       when: gpg_result.rc != 0
+
+    - name: Export GPG key to apt trusted keyring
+      ansible.builtin.command:
+        cmd: gpg --no-default-keyring --keyring /usr/share/keyrings/clickhouse-keyring.gpg --export 3E4AD4719DDE9A38 | apt-key add -
+        creates: /etc/apt/trusted.gpg.d/clickhouse-keyring.gpg
+      register: apt_key_result
+      changed_when: apt_key_result.rc == 0
 
     - name: Add ClickHouse repository
       ansible.builtin.shell:
