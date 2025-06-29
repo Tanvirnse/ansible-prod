@@ -61,19 +61,19 @@
         backup: yes
       notify: Restart ClickHouse
 
-    - name: Configure default user password in users.xml
-      ansible.builtin.blockinfile:
-        path: /etc/clickhouse-server/users.xml
-        marker: "<!-- {mark} ANSIBLE MANAGED BLOCK -->"
-        insertafter: "<default>"
-        block: |
-          <password>ZoNq3hHlglto7qc</password>
-          <access_management>1</access_management>
-          <networks>
-            <ip>::/0</ip>
-          </networks>
-        backup: yes
-      notify: Restart ClickHouse
+#    - name: Configure default user password in users.xml
+#      ansible.builtin.blockinfile:
+#        path: /etc/clickhouse-server/users.xml
+#        marker: "<!-- {mark} ANSIBLE MANAGED BLOCK -->"
+#        insertafter: "<default>"
+#        block: |
+#          <password>ZoNq3hHlglto7qc</password>
+#          <access_management>1</access_management>
+#          <networks>
+#            <ip>::/0</ip>
+#          </networks>
+#        backup: yes
+#      notify: Restart ClickHouse
 
     - name: Ensure ClickHouse service is started and enabled
       ansible.builtin.service:
