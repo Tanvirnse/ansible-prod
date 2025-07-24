@@ -1,0 +1,32 @@
+---
+- name: Replace certificates and keys on target system
+  hosts: all
+  become: true
+
+  vars:
+    cert_dir: /opt/certs
+
+  tasks:
+    - name: Deploy CA certificate
+      template:
+        src: ca.crt.j2
+        dest: "{{ cert_dir }}/ca.crt"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Deploy private key
+      template:
+        src: private.key.j2
+        dest: "{{ cert_dir }}/private.key"
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Deploy public key
+      template:
+        src: public.key.j2
+        dest: "{{ cert_dir }}/public.key"
+        owner: root
+        group: root
+        mode: '0644'
