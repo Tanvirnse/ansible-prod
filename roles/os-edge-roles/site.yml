@@ -3,4 +3,4 @@
   hosts: all
   become: yes
   roles:
-    - os-edge-roles
+    - roles
