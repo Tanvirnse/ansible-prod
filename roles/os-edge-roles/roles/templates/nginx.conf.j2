@@ -1,0 +1,40 @@
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+    worker_connections 768;
+    # multi_accept on;
+}
+
+http {
+    proxy_cache_path /mnt/ome-storage/nginx-cache levels=1:2 keys_zone=cache_zone_one:4000m max_size=50g;
+
+    # Correct log format with proper structure
+    #log_format main 'time="$time_iso8601" remote_addr="$remote_addr" up_cache_status="$upstream_cache_status" req="$request" status="$status" '
+    #              'req_time="$request_time" bytes_sent="$body_bytes_sent" up_cache_status="$upstream_cache_status" '
+    #              'up_status="$upstream_status" up_addr="$upstream_addr" up_resp_time="$upstream_response_time" '
+    #              'ref="$http_referer" ua="$http_user_agent" scheme="$scheme"';
+
+
+    #log_format main 'time="$time_iso8601" up_cache_status="$upstream_cache_status" status="$status" remote_addr="$remote_addr"  req="$request" '
+    #              'req_time="$request_time" bytes_sent="$body_bytes_sent" '
+    #              'up_status="$upstream_status" up_addr="$upstream_addr" up_resp_time="$upstream_response_time" ';
+
+    # log_format main '$time_iso8601 $upstream_cache_status $status '
+    #               '$request_time $upstream_response_time $remote_addr $body_bytes_sent '
+    #               '$request '
+    #               '$upstream_status $upstream_addr ';
+
+
+    # access_log /var/log/nginx/access.log main;
+    access_log off;
+   # upstream origin {
+   #     server os-edge-mc-07.udvashunmesh.com.com:443; # Make sure asdf.com is replaced with a real host or IP
+   #     keepalive 64;
+   # }
+
+    # Include all sites in sites-enabled
+    include /etc/nginx/sites-enabled/*;
+}
